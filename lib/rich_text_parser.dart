@@ -146,6 +146,7 @@ class ParseContext {
     spansOnly = parseContext.spansOnly;
     inBlock = parseContext.inBlock;
     childStyle = parseContext.childStyle ?? TextStyle();
+    routes = parseContext.routes;
   }
 }
 
@@ -758,6 +759,9 @@ class HtmlRichTextParser extends StatelessWidget {
                 if (_widget != null) {
                   _child = _widget(buildContext);
                 }
+              }
+              if (_child == null) {
+                _child = Placeholder();
               }
             }
             parseContext.rootWidgetList.add(Container(
