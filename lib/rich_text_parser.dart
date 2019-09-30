@@ -753,7 +753,12 @@ class HtmlRichTextParser extends StatelessWidget {
             Widget _child;
             if (node.attributes['src'] != null) {
               final _routes = parseContext.routes;
-              _child = _routes[node.attributes['src']](buildContext);
+              if (_routes != null) {
+                final _widget = _routes[node.attributes['src']];
+                if (_widget != null) {
+                  _child = _widget(buildContext);
+                }
+              }
             }
             parseContext.rootWidgetList.add(Container(
               width: width,
