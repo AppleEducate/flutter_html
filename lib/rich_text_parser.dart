@@ -117,6 +117,7 @@ class ParseContext {
   bool spansOnly = false;
   bool inBlock = false;
   TextStyle childStyle;
+  Map<String, WidgetBuilder> routes;
 
   ParseContext({
     this.rootWidgetList,
@@ -129,6 +130,7 @@ class ParseContext {
     this.spansOnly = false,
     this.inBlock = false,
     this.childStyle,
+    @required this.routes,
   }) {
     childStyle = childStyle ?? TextStyle();
   }
@@ -149,6 +151,7 @@ class ParseContext {
 
 class HtmlRichTextParser extends StatelessWidget {
   HtmlRichTextParser({
+    @required this.routes,
     this.shrinkToFit,
     this.onLinkTap,
     this.renderNewlines = false,
@@ -181,6 +184,7 @@ class HtmlRichTextParser extends StatelessWidget {
   final ImageProperties imageProperties;
   final OnImageTap onImageTap;
   final bool showImages;
+  final Map<String, WidgetBuilder> routes;
 
   // style elements set a default style
   // for all child nodes
@@ -271,6 +275,7 @@ class HtmlRichTextParser extends StatelessWidget {
     "p",
     "pre",
     "section",
+    'flutter_widget',
   ];
 
   static get _supportedElements => List()
@@ -310,6 +315,7 @@ class HtmlRichTextParser extends StatelessWidget {
     ParseContext parseContext = ParseContext(
       rootWidgetList: widgetList,
       childStyle: DefaultTextStyle.of(context).style,
+      routes: routes,
     );
 
     // don't ignore the top level "body"
@@ -734,6 +740,26 @@ class HtmlRichTextParser extends StatelessWidget {
           case "hr":
             parseContext.rootWidgetList
                 .add(Divider(height: 1.0, color: Colors.black38));
+            break;
+          case "flutter_widget":
+            final width = imageProperties?.width ??
+                ((node.attributes['width'] != null)
+                    ? double.tryParse(node.attributes['width'])
+                    : null);
+            final height = imageProperties?.height ??
+                ((node.attributes['height'] != null)
+                    ? double.tryParse(node.attributes['height'])
+                    : null);
+            Widget _child;
+            if (node.attributes['src'] != null) {
+              final _routes = parseContext.routes;
+              _child = _routes[node.attributes['src']](buildContext);
+            }
+            parseContext.rootWidgetList.add(Container(
+              width: width,
+              height: height,
+              child: _child,
+            ));
             break;
           case "img":
             if (showImages) {

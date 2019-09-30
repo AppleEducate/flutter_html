@@ -10,6 +10,7 @@ class Html extends StatelessWidget {
   Html({
     Key key,
     @required this.data,
+    @required this.routes,
     this.padding,
     this.backgroundColor,
     this.defaultTextStyle,
@@ -56,6 +57,9 @@ class Html extends StatelessWidget {
   final CustomTextStyle customTextStyle;
   final CustomTextAlign customTextAlign;
 
+  /// Flutter Material App Routes (For [flutter_widget] tag)
+  final Map<String, WidgetBuilder> routes;
+
   @override
   Widget build(BuildContext context) {
     final double width = shrinkToFit ? null : MediaQuery.of(context).size.width;
@@ -80,6 +84,7 @@ class Html extends StatelessWidget {
                 imageProperties: imageProperties,
                 onImageTap: onImageTap,
                 showImages: showImages,
+                routes: routes,
               )
             : HtmlOldParser(
                 width: width,
