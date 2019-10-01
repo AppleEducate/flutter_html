@@ -770,6 +770,7 @@ class HtmlRichTextParser extends StatelessWidget {
               child: _child,
             ));
             break;
+          case "amp-img":
           case "img":
             if (showImages) {
               if (node.attributes['src'] != null) {
