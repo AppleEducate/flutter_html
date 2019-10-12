@@ -2,9 +2,8 @@ library flutter_html;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_html/html_parser.dart';
+import 'package:flutter_html/image_properties.dart';
 import 'package:flutter_html/rich_text_parser.dart';
-
-import 'image_properties.dart';
 
 class Html extends StatelessWidget {
   Html({
@@ -78,7 +77,7 @@ class Html extends StatelessWidget {
                 customEdgeInsets: customEdgeInsets,
                 customTextStyle: customTextStyle,
                 customTextAlign: customTextAlign,
-                html: data,
+                htmlData: data,
                 onImageError: onImageError,
                 linkStyle: linkStyle,
                 imageProperties: imageProperties,
@@ -91,7 +90,7 @@ class Html extends StatelessWidget {
                 onLinkTap: onLinkTap,
                 renderNewlines: renderNewlines,
                 customRender: customRender,
-                html: data,
+                htmlData: data,
                 blockSpacing: blockSpacing,
                 onImageError: onImageError,
                 linkStyle: linkStyle,

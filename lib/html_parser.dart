@@ -2,8 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_html/rich_text_parser.dart';
-import 'package:html/dom.dart' as dom;
-import 'package:html/parser.dart' as parser;
+import 'package:universal_html/prefer_universal/html.dart' as html;
 
 class HtmlOldParser extends StatelessWidget {
   HtmlOldParser({
@@ -12,7 +11,7 @@ class HtmlOldParser extends StatelessWidget {
     this.renderNewlines = false,
     this.customRender,
     this.blockSpacing,
-    this.html,
+    this.htmlData,
     this.onImageError,
     this.linkStyle = const TextStyle(
         decoration: TextDecoration.underline,
@@ -26,7 +25,7 @@ class HtmlOldParser extends StatelessWidget {
   final bool renderNewlines;
   final CustomRender customRender;
   final double blockSpacing;
-  final String html;
+  final String htmlData;
   final ImageErrorListener onImageError;
   final TextStyle linkStyle;
   final bool showImages;
@@ -113,7 +112,7 @@ class HtmlOldParser extends StatelessWidget {
   Widget build(BuildContext context) {
     return Wrap(
       alignment: WrapAlignment.start,
-      children: parse(html),
+      children: parse(htmlData),
     );
   }
 
@@ -124,12 +123,15 @@ class HtmlOldParser extends StatelessWidget {
     if (renderNewlines) {
       data = data.replaceAll("\n", "<br />");
     }
-    dom.Document document = parser.parse(data);
-    widgetList.add(_parseNode(document.body));
+    final parser = html.DomParser();
+    html.Document document = parser.parseFromString(data, 'text/html');
+    for (var node in document.nodes) {
+      widgetList.add(_parseNode(node));
+    }
     return widgetList;
   }
 
-  Widget _parseNode(dom.Node node) {
+  Widget _parseNode(html.Node node) {
     if (customRender != null) {
       final Widget customWidget =
           customRender(node, _parseNodeList(node.nodes));
@@ -138,7 +140,7 @@ class HtmlOldParser extends StatelessWidget {
       }
     }
 
-    if (node is dom.Element) {
+    if (node is html.Element) {
       if (!_supportedElements.contains(node.localName)) {
         return Container();
       }
@@ -876,7 +878,7 @@ class HtmlOldParser extends StatelessWidget {
             ),
           );
       }
-    } else if (node is dom.Text) {
+    } else if (node is html.Text) {
       //We don't need to worry about rendering extra whitespace
       if (node.text.trim() == "" && node.text.indexOf(" ") == -1) {
         return Wrap();
@@ -897,7 +899,7 @@ class HtmlOldParser extends StatelessWidget {
     return Wrap();
   }
 
-  List<Widget> _parseNodeList(List<dom.Node> nodeList) {
+  List<Widget> _parseNodeList(List<html.Node> nodeList) {
     return nodeList.map((node) {
       return _parseNode(node);
     }).toList();
@@ -917,20 +919,21 @@ class HtmlOldParser extends StatelessWidget {
     return stringToTrim;
   }
 
-  bool _isNotFirstBreakTag(dom.Node node) {
+  bool _isNotFirstBreakTag(html.Node node) {
     int index = node.parentNode.nodes.indexOf(node);
     if (index == 0) {
       if (node.parentNode == null) {
         return false;
       }
       return _isNotFirstBreakTag(node.parentNode);
-    } else if (node.parentNode.nodes[index - 1] is dom.Element) {
-      if ((node.parentNode.nodes[index - 1] as dom.Element).localName == "br") {
+    } else if (node.parentNode.nodes[index - 1] is html.Element) {
+      if ((node.parentNode.nodes[index - 1] as html.Element).localName ==
+          "br") {
         return true;
       }
       return false;
-    } else if (node.parentNode.nodes[index - 1] is dom.Text) {
-      if ((node.parentNode.nodes[index - 1] as dom.Text).text.trim() == "") {
+    } else if (node.parentNode.nodes[index - 1] is html.Text) {
+      if ((node.parentNode.nodes[index - 1] as html.Text).text.trim() == "") {
         return _isNotFirstBreakTag(node.parentNode.nodes[index - 1]);
       } else {
         return false;

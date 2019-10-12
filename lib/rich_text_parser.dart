@@ -2,18 +2,16 @@ import 'dart:convert';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:html/dom.dart' as dom;
-import 'package:html/parser.dart' as parser;
+import 'package:flutter_html/image_properties.dart';
+import 'package:universal_html/prefer_universal/html.dart' as html;
 
-import 'image_properties.dart';
-
-typedef CustomRender = Widget Function(dom.Node node, List<Widget> children);
+typedef CustomRender = Widget Function(html.Node node, List<Widget> children);
 typedef CustomTextStyle = TextStyle Function(
-  dom.Node node,
+  html.Node node,
   TextStyle baseStyle,
 );
-typedef CustomTextAlign = TextAlign Function(dom.Element elem);
-typedef CustomEdgeInsets = EdgeInsets Function(dom.Node node);
+typedef CustomTextAlign = TextAlign Function(html.Element elem);
+typedef CustomEdgeInsets = EdgeInsets Function(html.Node node);
 typedef OnLinkTap = void Function(String url);
 typedef OnImageTap = void Function(String source);
 
@@ -156,7 +154,7 @@ class HtmlRichTextParser extends StatelessWidget {
     this.shrinkToFit,
     this.onLinkTap,
     this.renderNewlines = false,
-    this.html,
+    this.htmlData,
     this.customEdgeInsets,
     this.customTextStyle,
     this.customTextAlign,
@@ -176,7 +174,7 @@ class HtmlRichTextParser extends StatelessWidget {
   final bool shrinkToFit;
   final onLinkTap;
   final bool renderNewlines;
-  final String html;
+  final String htmlData;
   final CustomEdgeInsets customEdgeInsets;
   final CustomTextStyle customTextStyle;
   final CustomTextAlign customTextAlign;
@@ -288,12 +286,12 @@ class HtmlRichTextParser extends StatelessWidget {
   // however, the first time it is called, we make sure
   // to ignore the node itself, so we only pay attention
   // to the children
-  bool _hasBlockChild(dom.Node node, {bool ignoreSelf = true}) {
+  bool _hasBlockChild(html.Node node, {bool ignoreSelf = true}) {
     bool retval = false;
-    if (node is dom.Element) {
+    if (node is html.Element) {
       if (_supportedBlockElements.contains(node.localName) && !ignoreSelf)
         return true;
-      node.nodes.forEach((dom.Node node) {
+      node.nodes.forEach((html.Node node) {
         if (_hasBlockChild(node, ignoreSelf: false)) retval = true;
       });
     }
@@ -304,13 +302,16 @@ class HtmlRichTextParser extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String data = html;
+    String data = htmlData;
 
     if (renderNewlines) {
       data = data.replaceAll("\n", "<br />");
     }
-    dom.Document document = parser.parse(data);
-    dom.Node body = document.body;
+    final parser = html.DomParser();
+    html.Document document = parser.parseFromString(data, 'text/html');
+
+    // html.Document document = parser.parse(data);
+    // html.Node body = document.body;
 
     List<Widget> widgetList = new List<Widget>();
     ParseContext parseContext = ParseContext(
@@ -320,7 +321,10 @@ class HtmlRichTextParser extends StatelessWidget {
     );
 
     // don't ignore the top level "body"
-    _parseNode(body, parseContext, context);
+    // _parseNode(body, parseContext, context);
+    for (var node in document.nodes) {
+      _parseNode(node, parseContext, context);
+    }
 
     // filter out empty widgets
     List<Widget> children = [];
@@ -358,10 +362,10 @@ class HtmlRichTextParser extends StatelessWidget {
   //
   // each iteration creates a new parseContext as a copy of the previous one if it needs to
   void _parseNode(
-      dom.Node node, ParseContext parseContext, BuildContext buildContext) {
+      html.Node node, ParseContext parseContext, BuildContext buildContext) {
     // TEXT ONLY NODES
     // a text only node is a child of a tag with no inner html
-    if (node is dom.Text) {
+    if (node is html.Text) {
       // WHITESPACE CONSIDERATIONS ---
       // truly empty nodes should just be ignored
       if (node.text.trim() == "" && node.text.indexOf(" ") == -1) {
@@ -471,7 +475,7 @@ class HtmlRichTextParser extends StatelessWidget {
     }
 
     // OTHER ELEMENT NODES
-    else if (node is dom.Element) {
+    else if (node is html.Element) {
       if (!_supportedElements.contains(node.localName)) {
         return;
       }
@@ -994,7 +998,7 @@ class HtmlRichTextParser extends StatelessWidget {
         }
       }
 
-      node.nodes.forEach((dom.Node childNode) {
+      node.nodes.forEach((html.Node childNode) {
         _parseNode(childNode, nextContext, buildContext);
       });
     }

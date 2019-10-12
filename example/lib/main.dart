@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:html/dom.dart' as dom;
 
 void main() => runApp(new MyApp());
 
@@ -133,33 +132,34 @@ class _MyHomePageState extends State<MyHomePage> {
               print(src);
             },
             //Must have useRichText set to false for this to work
-            customRender: (node, children) {
-              if (node is dom.Element) {
-                switch (node.localName) {
-                  case "custom_tag":
-                    return Column(children: children);
-                }
-              }
-              return null;
-            },
-            customTextAlign: (dom.Node node) {
-              if (node is dom.Element) {
-                switch (node.localName) {
-                  case "p":
-                    return TextAlign.justify;
-                }
-              }
-              return null;
-            },
-            customTextStyle: (dom.Node node, TextStyle baseStyle) {
-              if (node is dom.Element) {
-                switch (node.localName) {
-                  case "p":
-                    return baseStyle.merge(TextStyle(height: 2, fontSize: 20));
-                }
-              }
-              return baseStyle;
-            },
+            // customRender: (node, children) {
+            //   if (node is html.Element) {
+            //     switch (node.localName) {
+            //       case "custom_tag":
+            //         return Column(children: children);
+            //     }
+            //   }
+            //   return null;
+            // },
+            // customTextAlign: (html.Node node) {
+            //   if (node is html.Element) {
+            //     switch (node.localName) {
+            //       case "p":
+            //         return TextAlign.justify;
+            //     }
+            //   }
+            //   return null;
+            // },
+            // customTextStyle: (html.Node node, TextStyle baseStyle) {
+            //   if (node is html.Element) {
+            //     switch (node.localName) {
+            //       case "p":
+            //         return baseStyle.merge(TextStyle(height: 2, fontSize: 20));
+            //     }
+            //   }
+            //   return baseStyle;
+            // },
+            routes: {},
           ),
         ),
       ),
